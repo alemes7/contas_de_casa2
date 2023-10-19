@@ -1,0 +1,33 @@
+
+body{
+    font-family: 'Poppins', sans-serif;
+    background-color: crimson;
+}
+
+html::before{
+    content: "";
+    width: 100%;
+    position: absolute;
+    z-index: -1;
+    background-color: crimson;
+}
+
+.navbar-brand{
+    font-size: 17px;
+    font-weight: 600;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+    .col-md{
+        text-align: center;
+    }
+
+    .col-md{
+        margin-bottom: 8px;
+    }
+}
