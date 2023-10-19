@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+body{
+    font-family: 'Poppins', sans-serif;
+}
+
+html::before{
+    content: "";
+    width: 100%;
+    height: 120%;
+    position: absolute;
+    z-index: -1;
+    background-color: crimson;
+}
+
+.navbar-brand{
+    font-size: 17px;
+    font-weight: 600;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+    .col-md{
+        text-align: center;
+    }
+
+    .col-md{
+        margin-bottom: 30px;
+    }
+}
+
