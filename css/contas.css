@@ -1,0 +1,80 @@
+.conta-form {
+    border: 1px solid #ddd;
+    margin: 1rem;
+    padding: 1rem;
+    background-color: #FFF;
+    border-radius: 8px;
+    color: #000;
+}
+
+.conta-form label {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.conta-form input,
+.conta-form select,
+.conta-form button {
+    margin-top: 0.2rem;
+}
+
+.custom-button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.custom-button:hover {
+    background-color: #0056b3;
+}
+
+.conta-lista {
+    border: 1px solid #ddd;
+    margin: 1rem;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+
+/* ... outros estilos ... */
+
+.conta-lista {
+    flex-basis: calc(50% - 1rem);
+    padding: 1rem;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+
+/* Estilos para telas menores, como dispositivos móveis */
+@media screen and (max-width: 768px) {
+    .conta-listas {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .conta-lista {
+        flex-basis: 100%;
+        margin-bottom: 1rem;
+    }
+}
+
+.grafico-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.grafico-container img {
+    width: 100%; /* A imagem ocupará a largura total do contêiner */
+    max-width: 500px; /* Defina um valor máximo para a largura da imagem */
+    height: auto; /* Mantém a proporção original da imagem */
+}

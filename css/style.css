@@ -12,6 +12,14 @@ html::before{
     background-color: crimson;
 }
 
+h1{
+    color: #fff;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 30px;
+}
+
 .navbar-brand{
     font-size: 17px;
     font-weight: 600;
