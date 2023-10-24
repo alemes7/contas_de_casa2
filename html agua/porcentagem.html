@@ -87,10 +87,16 @@
         <h1>Porcentagem das contas de água</h1>
     </header>
 
-    <div class="grafico-container">
-        
-    </div>
-
+    <div class="conta-listas">
+      <section class="conta-lista">
+        <h2 class="text-center">Gráficos</h2>
+          <div class="grafico-container">
+              <button id="alternarGraficoAgua" class="custom-button">Alternar Gráfico</button>
+              <div id="graficoAgua">
+                  <!-- Aqui o gráfico de água será exibido (inicialmente oculto) -->
+                  <img src="../img/agualine.jpeg" alt="Gráfico de Linha - Contas de Água">
+              </div>
+          </div>
     
     
     <footer>
@@ -98,6 +104,7 @@
             <p>&copy; 2023 Alexandre Lemes. Todos os direitos reservados.</p>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
     crossorigin="anonymous"></script>
