@@ -20,6 +20,11 @@ h1{
     font-size: 30px;
 }
 
+.navbar-brand:hover {
+    /* Adicione a animação desejada quando o mouse estiver sobre a marca da navbar */
+    color: gray;
+  }
+
 .navbar-brand{
     font-size: 17px;
     font-weight: 600;
