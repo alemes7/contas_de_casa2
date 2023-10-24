@@ -44,3 +44,13 @@ h1{
         margin-bottom: 8px;
     }
 }
+
+.navbar {
+    background-color: transparent; /* Define o fundo da navbar como transparente */
+    padding: 2px;
+}
+
+.navbar-brand img {
+    max-width: 55px; /* Ajuste o tamanho máximo da logo (altere o tamanho conforme necessário) */
+    height: auto; /* Mantém a proporção original da imagem */
+}
