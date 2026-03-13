@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Energia · Contas de Casa</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style> :root { --cat: var(--energia); } </style>
+</head>
+<body>
+
+<nav class="nav"></nav>
+
+<main class="page">
+
+  <div class="page-title">
+    <div class="page-title-accent"></div>
+    <div>
+      <h1>CONTA<br>DE ENERGIA</h1>
+      <p class="sub" id="sub">Carregando…</p>
+    </div>
+  </div>
+
+  <div class="stat-strip" id="stats"></div>
+
+  <!-- Add form -->
+  <div class="add-section">
+    <div class="add-section-header" id="form-toggle">
+      REGISTRAR NOVA CONTA <span>+</span>
+    </div>
+    <div class="add-form" id="add-form">
+      <div class="field">
+        <label>Mês / Ano</label>
+        <input type="text" id="f-mes" placeholder="ex: Outubro/2024">
+      </div>
+      <div class="field">
+        <label>Valor (R$)</label>
+        <input type="number" id="f-valor" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="field">
+        <label>Data de pagamento</label>
+        <input type="text" id="f-data" placeholder="dd/mm/aaaa (opcional)">
+      </div>
+      <div class="field" style="flex:0;min-width:120px">
+        <label>Status</label>
+        <select id="f-paga" style="font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px 12px;border:2px solid var(--border);background:var(--paper);color:var(--ink);outline:none;">
+          <option value="true">Paga</option>
+          <option value="false">Em aberto</option>
+        </select>
+      </div>
+      <button class="btn-add" id="btn-add">ADICIONAR</button>
+    </div>
+  </div>
+
+  <!-- Bills list -->
+  <div class="bills-section">
+    <div class="bills-header">
+      <h2>HISTÓRICO</h2>
+      <span class="bills-count" id="bills-count"></span>
+    </div>
+    <div id="bills-section"></div>
+  </div>
+
+</main>
+
+<footer>© Alexandre Lemes &nbsp;·&nbsp; Contas de Casa</footer>
+
+<script type="module">
+  import { renderNav, getContas, addConta, deleteConta, brl, total, media, renderTable } from '../js/shared.js';
+
+  const CAT = 'energia';
+  renderNav(CAT);
+
+  let list = getContas(CAT);
+  refresh();
+
+  function refresh() {
+    // sub
+    document.querySelector('#sub').textContent =
+      `${list.length} meses registrados`;
+
+    // stats
+    const tot = total(list);
+    const med = media(list);
+    const max = list.length ? Math.max(...list.map(c=>c.valor)) : 0;
+    document.querySelector('#stats').innerHTML = `
+      <div class="stat-block">
+        <div class="stat-label">Total pago</div>
+        <div class="stat-value">${brl(tot)}</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Média mensal</div>
+        <div class="stat-value">${brl(med)}</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Maior conta</div>
+        <div class="stat-value">${brl(max)}</div>
+      </div>
+    `;
+
+    // table
+    renderTable(CAT, list, id => {
+      list = deleteConta(CAT, id);
+      refresh();
+    });
+  }
+
+  // form toggle
+  const header = document.querySelector('#form-toggle');
+  const form   = document.querySelector('#add-form');
+  header.addEventListener('click', () => {
+    header.classList.toggle('open');
+    form.classList.toggle('open');
+  });
+
+  // submit
+  document.querySelector('#btn-add').addEventListener('click', () => {
+    const mes   = document.querySelector('#f-mes').value.trim();
+    const valor = parseFloat(document.querySelector('#f-valor').value);
+    const data  = document.querySelector('#f-data').value.trim();
+    const paga  = document.querySelector('#f-paga').value === 'true';
+
+    if (!mes || isNaN(valor) || valor <= 0) {
+      alert('Preencha pelo menos o mês e o valor.');
+      return;
+    }
+
+    list = addConta(CAT, { mes, valor, data, paga });
+    refresh();
+
+    // reset
+    document.querySelector('#f-mes').value   = '';
+    document.querySelector('#f-valor').value = '';
+    document.querySelector('#f-data').value  = '';
+    header.classList.remove('open');
+    form.classList.remove('open');
+  });
+</script>
+</body>
+</html>
