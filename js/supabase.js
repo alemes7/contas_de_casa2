@@ -4,11 +4,11 @@
 //   Supabase → Project Settings → API
 // ================================================================
 
-const SUPABASE_URL = 'https://bgqvouwyolsqzibtwify.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncXZvdXd5b2xzcXppYnR3aWZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzcwNjc4MCwiZXhwIjoyMDg5MjgyNzgwfQ.VVj5lait3lG8u8TxsRnuKFmu78QDSgzeschMlGIAA6w';
-
-// ── Cliente ──────────────────────────────────────────────────
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://bgqvouwyolsqzibtwify.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncXZvdXd5b2xzcXppYnR3aWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDY3ODAsImV4cCI6MjA4OTI4Mjc4MH0.b9BskxAduRa6PYHSxmNT8CGmHlohByukekaLDl6I6B8';
+
 export const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── Base path (funciona no GitHub Pages e local) ─────────────
