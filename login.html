@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar · Contas de Casa</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      border: 2px solid var(--ink);
+    }
+
+    .login-header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 20px 28px;
+    }
+    .login-header .brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: .06em;
+    }
+    .login-header .sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-top: 2px;
+    }
+
+    .login-body { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+
+    .login-field { display: flex; flex-direction: column; gap: 6px; }
+    .login-field label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+    .login-field input {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      padding: 11px 14px;
+      border: 2px solid var(--border);
+      background: var(--paper);
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .login-field input:focus { border-color: var(--ink); }
+
+    .btn-login {
+      width: 100%;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: .08em;
+      padding: 12px;
+      background: var(--ink);
+      color: var(--paper);
+      border: 2px solid var(--ink);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      margin-top: 4px;
+    }
+    .btn-login:hover { background: var(--paper); color: var(--ink); }
+    .btn-login:disabled { opacity: .5; cursor: not-allowed; }
+
+    .login-error {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--energia);
+      padding: 10px 14px;
+      border: 1.5px solid var(--energia);
+      display: none;
+    }
+    .login-error.show { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="brand">CONTAS DE CASA</div>
+      <div class="sub">Acesso restrito · Família Lemes</div>
+    </div>
+    <div class="login-body">
+      <div class="login-error" id="erro"></div>
+      <div class="login-field">
+        <label>E-mail</label>
+        <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-login" id="btn-login">ENTRAR</button>
+    </div>
+  </div>
+</div>
+
+<footer>© Alexandre Lemes &nbsp;·&nbsp; Contas de Casa</footer>
+
+<script type="module">
+  import { login, getSession } from './js/supabase.js';
+
+  // Se já está logado, vai direto pro index
+  const session = await getSession();
+  if (session) window.location.href = '/index.html';
+
+  const btnLogin = document.querySelector('#btn-login');
+  const erroEl   = document.querySelector('#erro');
+
+  function setErro(msg) {
+    erroEl.textContent = msg;
+    erroEl.classList.toggle('show', !!msg);
+  }
+
+  // Enter no campo senha também submete
+  document.querySelector('#senha').addEventListener('keydown', e => {
+    if (e.key === 'Enter') btnLogin.click();
+  });
+
+  btnLogin.addEventListener('click', async () => {
+    const email = document.querySelector('#email').value.trim();
+    const senha = document.querySelector('#senha').value;
+
+    if (!email || !senha) { setErro('Preencha e-mail e senha.'); return; }
+
+    btnLogin.disabled   = true;
+    btnLogin.textContent = 'ENTRANDO…';
+    setErro('');
+
+    try {
+      await login(email, senha);
+      window.location.href = '/index.html';
+    } catch (err) {
+      setErro('E-mail ou senha incorretos.');
+      btnLogin.disabled    = false;
+      btnLogin.textContent = 'ENTRAR';
+    }
+  });
+</script>
+</body>
+</html>

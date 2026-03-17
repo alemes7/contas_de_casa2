@@ -21,7 +21,9 @@
     </div>
   </div>
 
-  <div class="stat-strip" id="stats"></div>
+  <div class="stat-strip" id="stats">
+    <div class="stat-block"><div class="stat-label">Aguarde</div><div class="stat-value">…</div></div>
+  </div>
 
   <!-- Add form -->
   <div class="add-section">
@@ -66,23 +68,27 @@
 <footer>© Alexandre Lemes &nbsp;·&nbsp; Contas de Casa</footer>
 
 <script type="module">
-  import { renderNav, getContas, addConta, deleteConta, brl, total, media, renderTable } from '../js/shared.js';
+  import { requireAuth, getContas, addConta, deleteConta } from '../js/supabase.js';
+  import { renderNav, renderTable, brl, total, media }     from '../js/shared.js';
 
   const CAT = 'agua';
+  await requireAuth('..');
   renderNav(CAT);
 
-  let list = getContas(CAT);
-  refresh();
+  let list = [];
+
+  async function load() {
+    list = await getContas(CAT);
+    refresh();
+  }
 
   function refresh() {
-    // sub
-    document.querySelector('#sub').textContent =
-      `${list.length} meses registrados`;
+    document.querySelector('#sub').textContent = `${list.length} meses registrados`;
 
-    // stats
     const tot = total(list);
     const med = media(list);
-    const max = list.length ? Math.max(...list.map(c=>c.valor)) : 0;
+    const max = list.length ? Math.max(...list.map(c => parseFloat(c.valor))) : 0;
+
     document.querySelector('#stats').innerHTML = `
       <div class="stat-block">
         <div class="stat-label">Total pago</div>
@@ -98,12 +104,19 @@
       </div>
     `;
 
-    // table
-    renderTable(CAT, list, id => {
-      list = deleteConta(CAT, id);
-      refresh();
+    renderTable(list, async id => {
+      if (!confirm('Remover esta conta?')) return;
+      try {
+        await deleteConta(id);
+        list = list.filter(c => c.id !== id);
+        refresh();
+      } catch (err) {
+        alert('Erro ao remover: ' + err.message);
+      }
     });
   }
+
+  await load();
 
   // form toggle
   const header = document.querySelector('#form-toggle');
@@ -114,26 +127,37 @@
   });
 
   // submit
-  document.querySelector('#btn-add').addEventListener('click', () => {
-    const mes   = document.querySelector('#f-mes').value.trim();
-    const valor = parseFloat(document.querySelector('#f-valor').value);
-    const data  = document.querySelector('#f-data').value.trim();
-    const paga  = document.querySelector('#f-paga').value === 'true';
+  const btnAdd = document.querySelector('#btn-add');
+  btnAdd.addEventListener('click', async () => {
+    const mes      = document.querySelector('#f-mes').value.trim();
+    const valor    = parseFloat(document.querySelector('#f-valor').value);
+    const data_pgto = document.querySelector('#f-data').value.trim();
+    const paga     = document.querySelector('#f-paga').value === 'true';
 
     if (!mes || isNaN(valor) || valor <= 0) {
       alert('Preencha pelo menos o mês e o valor.');
       return;
     }
 
-    list = addConta(CAT, { mes, valor, data, paga });
-    refresh();
+    btnAdd.disabled    = true;
+    btnAdd.textContent = 'SALVANDO…';
 
-    // reset
-    document.querySelector('#f-mes').value   = '';
-    document.querySelector('#f-valor').value = '';
-    document.querySelector('#f-data').value  = '';
-    header.classList.remove('open');
-    form.classList.remove('open');
+    try {
+      const nova = await addConta(CAT, { mes, valor, data_pgto, paga });
+      list.push(nova);
+      refresh();
+
+      document.querySelector('#f-mes').value   = '';
+      document.querySelector('#f-valor').value = '';
+      document.querySelector('#f-data').value  = '';
+      header.classList.remove('open');
+      form.classList.remove('open');
+    } catch (err) {
+      alert('Erro ao salvar: ' + err.message);
+    } finally {
+      btnAdd.disabled    = false;
+      btnAdd.textContent = 'ADICIONAR';
+    }
   });
 </script>
 </body>

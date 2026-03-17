@@ -1,56 +1,105 @@
 # Contas de Casa 🏠
+**Stack:** HTML + CSS + JS puro · Supabase (banco + auth) · GitHub Pages (hospedagem)
+**Custo:** R$ 0,00
 
-Dashboard de administração de contas domésticas. Feito com HTML, CSS e JS puro — sem frameworks, sem build step, funciona direto no GitHub Pages.
+---
 
-## Estrutura
+## Passo 1 — Criar o projeto no Supabase
+
+1. Acesse [supabase.com](https://supabase.com) e crie uma conta gratuita
+2. Clique em **New Project**
+3. Dê um nome (ex: `contas-de-casa`), escolha uma senha pro banco, região **South America (São Paulo)**
+4. Aguarde ~2 minutos enquanto o projeto sobe
+
+---
+
+## Passo 2 — Criar as tabelas
+
+1. No menu lateral do Supabase, clique em **SQL Editor**
+2. Clique em **New Query**
+3. Cole o conteúdo do arquivo `supabase/schema.sql`
+4. Clique em **Run** (▶)
+
+Isso cria a tabela `contas`, ativa o RLS (Row Level Security) e já insere o histórico de 2023.
+
+---
+
+## Passo 3 — Pegar as credenciais do projeto
+
+1. No menu lateral, clique em **Project Settings → API**
+2. Copie:
+   - **Project URL** → algo como `https://abcdefgh.supabase.co`
+   - **anon / public key** → começa com `eyJ...`
+
+---
+
+## Passo 4 — Colar as credenciais no código
+
+Abra o arquivo `js/supabase.js` e substitua as duas linhas no topo:
+
+```js
+const SUPABASE_URL = 'https://SEU-ID.supabase.co';   // ← sua URL aqui
+const SUPABASE_KEY = 'eyJ...';                         // ← sua anon key aqui
+```
+
+> ⚠️ A `anon key` é pública por design — ela só dá acesso ao que o RLS permite (usuários autenticados). Pode deixar exposta no frontend sem problema.
+
+---
+
+## Passo 5 — Criar os usuários (seus pais)
+
+1. No Supabase, vá em **Authentication → Users**
+2. Clique em **Add User → Create new user**
+3. Crie um usuário pra cada pessoa da família (email + senha)
+
+Eles vão usar esse email e senha pra entrar no site.
+
+---
+
+## Passo 6 — Subir no GitHub Pages
+
+1. Crie um repositório no GitHub (pode ser público ou privado)
+2. Faça push de todos os arquivos desta pasta
+3. Vá em **Settings → Pages → Branch: main → / (root) → Save**
+4. Aguarde ~1 min e acesse `https://SEU-USUARIO.github.io/NOME-DO-REPO`
+
+---
+
+## Como usar no dia a dia
+
+- Acesse o site pelo celular ou computador
+- Faça login com email e senha
+- Na página de cada conta (Água, Energia, etc), clique em **REGISTRAR NOVA CONTA**
+- Preencha: mês/ano, valor, data de pagamento e se já foi paga
+- Todos que estão logados veem os mesmos dados em tempo real
+
+---
+
+## Estrutura dos arquivos
 
 ```
-contas-casa/
-├── index.html          # Dashboard principal
-├── data.json           # ← EDITE AQUI para adicionar contas
+contas-de-casa/
+├── index.html              # Dashboard com totais por categoria
+├── login.html              # Tela de login
 ├── css/
-│   └── style.css
+│   └── style.css           # Todo o estilo
 ├── js/
-│   └── shared.js       # Sidebar, utilitários, carregamento do JSON
-└── pages/
-    ├── gastos.html
-    ├── pagas_agua.html
-    ├── pagas_energia.html
-    ├── pagas_internet.html
-    ├── pagas_vivo.html
-    ├── economia_agua.html
-    └── economia_energia.html
+│   ├── supabase.js         # ← CONFIGURE AQUI as credenciais
+│   └── shared.js           # Nav, tabela, helpers
+├── pages/
+│   ├── agua.html
+│   ├── energia.html
+│   ├── internet.html
+│   └── vivo.html
+└── supabase/
+    └── schema.sql          # Script SQL para rodar uma vez no Supabase
 ```
 
-## Como adicionar uma nova conta
+---
 
-Abra `data.json` e adicione um objeto na lista correspondente:
+## Testar localmente antes de subir
 
-```json
-{
-  "agua": [
-    { "mes": "Outubro", "valor": 132.50, "data": "15/11/2023", "paga": true },
-    ...
-  ]
-}
-```
-
-Campos:
-- `mes` — nome do mês em português
-- `valor` — valor em reais (número)
-- `data` — data de pagamento no formato `dd/mm/aaaa`, ou `null` se ainda não paga
-- `paga` — `true` ou `false`
-
-## Deploy no GitHub Pages
-
-1. Crie um repositório no GitHub (pode ser público ou privado com Pages ativado)
-2. Faça push de todos os arquivos
-3. Vá em **Settings → Pages → Branch: main → / (root)**
-4. Aguarde ~1 minuto e acesse `https://seu-usuario.github.io/nome-do-repo`
-
-> ⚠️ **Atenção**: O GitHub Pages serve arquivos estáticos via HTTP. O `fetch('data.json')` funciona normalmente nesse ambiente. Só não abre direto pelo sistema de arquivos (file://) — use um servidor local como `npx serve .` para testar localmente.
-
-## Testar localmente
+O `fetch` do Supabase funciona normalmente via `file://`, mas pra evitar qualquer problema:
 
 ```bash
 npx serve .
@@ -58,4 +107,4 @@ npx serve .
 python3 -m http.server 8080
 ```
 
-Depois acesse `http://localhost:8080`.
+Acesse `http://localhost:8080`.

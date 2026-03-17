@@ -11,7 +11,6 @@
 <nav class="nav"></nav>
 
 <main class="page">
-
   <div class="page-title">
     <div class="page-title-accent" style="background:var(--ink)"></div>
     <div>
@@ -20,21 +19,23 @@
     </div>
   </div>
 
-  <div class="total-bar" id="total-bar">
+  <div class="total-bar" id="total-bar" style="display:none">
     <span class="label">TOTAL ACUMULADO</span>
     <span class="value" id="total-geral">—</span>
   </div>
 
   <div class="cat-grid" id="cat-grid">
-    <!-- preenchido pelo JS -->
+    <div class="empty" style="grid-column:1/-1">Carregando dados…</div>
   </div>
-
 </main>
 
 <footer>© Alexandre Lemes &nbsp;·&nbsp; Contas de Casa</footer>
 
 <script type="module">
-  import { renderNav, getContas, brl, total, media } from './js/shared.js';
+  import { requireAuth, getTotais } from './js/supabase.js';
+  import { renderNav, brl }         from './js/shared.js';
+
+  await requireAuth('.');
   renderNav('index');
 
   const cats = [
@@ -44,25 +45,32 @@
     { key: 'vivo',     label: 'Vivo',     href: 'pages/vivo.html',     color: 'var(--vivo)'     },
   ];
 
-  let totalGeral = 0;
+  try {
+    const { totais, counts } = await getTotais();
+    const totalGeral = Object.values(totais).reduce((s, v) => s + v, 0);
 
-  document.querySelector('#cat-grid').innerHTML = cats.map(c => {
-    const list  = getContas(c.key);
-    const tot   = total(list);
-    const med   = media(list);
-    totalGeral += tot;
-    return `
-      <a class="cat-card" href="${c.href}">
-        <span class="cat-pill" style="background:${c.color}">${c.key.toUpperCase()}</span>
-        <h2>${c.label}</h2>
-        <div class="cat-total">${brl(tot)}</div>
-        <div class="cat-meta">${list.length} meses · média ${brl(med)}</div>
-        <span class="cat-arrow">↗</span>
-      </a>
-    `;
-  }).join('');
+    document.querySelector('#total-bar').style.display = 'flex';
+    document.querySelector('#total-geral').textContent = brl(totalGeral);
 
-  document.querySelector('#total-geral').textContent = brl(totalGeral);
+    document.querySelector('#cat-grid').innerHTML = cats.map(c => {
+      const tot = totais[c.key] ?? 0;
+      const n   = counts[c.key] ?? 0;
+      const med = n ? tot / n : 0;
+      return `
+        <a class="cat-card" href="${c.href}">
+          <span class="cat-pill" style="background:${c.color}">${c.key.toUpperCase()}</span>
+          <h2>${c.label}</h2>
+          <div class="cat-total">${brl(tot)}</div>
+          <div class="cat-meta">${n} meses · média ${brl(med)}</div>
+          <span class="cat-arrow">↗</span>
+        </a>
+      `;
+    }).join('');
+
+  } catch (err) {
+    document.querySelector('#cat-grid').innerHTML =
+      `<div class="empty" style="grid-column:1/-1;color:var(--energia)">Erro ao carregar: ${err.message}</div>`;
+  }
 </script>
 </body>
 </html>

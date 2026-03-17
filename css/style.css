@@ -459,3 +459,22 @@ footer {
   .total-bar { flex-direction: column; align-items: flex-start; gap: 4px; }
   .page-title h1 { font-size: 48px; }
 }
+
+/* ── Logout button in nav ── */
+.btn-logout {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  margin-left: 8px;
+}
+.btn-logout:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (max-width: 640px) { .btn-logout { display: none; } }
