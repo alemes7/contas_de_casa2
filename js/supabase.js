@@ -5,7 +5,7 @@
 // ================================================================
 
 const SUPABASE_URL = 'https://bgqvouwyolsqzibtwify.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_TZb7EU5duyf6SGy-97ABaw_Rq-Lo18A';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJncXZvdXd5b2xzcXppYnR3aWZ5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzcwNjc4MCwiZXhwIjoyMDg5MjgyNzgwfQ.VVj5lait3lG8u8TxsRnuKFmu78QDSgzeschMlGIAA6w';
 
 // ── Cliente ──────────────────────────────────────────────────
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
