@@ -52,7 +52,7 @@ export function renderNav(active) {
   });
 
   document.querySelector('#btn-logout').addEventListener('click', async () => {
-    const { logout } = await import(window.location.pathname.includes('/pages/') ? '../js/supabase.js' : './js/supabase.js');
+    const { logout } = await import(window.location.pathname.includes('/pages/') ? '../js/supabase.js' : './supabase.js');
     await logout();
   });
 }
