@@ -576,3 +576,30 @@ footer {
   .totals-row { flex-direction: column; }
   .total-bar--mes { border-left: none; border-top: 2px solid var(--ink); }
 }
+
+/* ── Date / Month pickers ── */
+.field input[type="month"],
+.field input[type="date"] {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 9px 12px;
+  border: 2px solid var(--border);
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.field input[type="month"]:focus,
+.field input[type="date"]:focus {
+  border-color: var(--cat);
+}
+/* remove o fundo azul padrão do chrome no calendar icon */
+::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .6;
+}
+::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}

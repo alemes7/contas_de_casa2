@@ -41,7 +41,7 @@
     <div class="add-form" id="add-form">
       <div class="field">
         <label>Mês / Ano</label>
-        <input type="text" id="f-mes" placeholder="ex: Outubro/2024">
+        <input type="month" id="f-mes">
       </div>
       <div class="field">
         <label>Valor (R$)</label>
@@ -49,7 +49,7 @@
       </div>
       <div class="field">
         <label>Data de pagamento</label>
-        <input type="text" id="f-data" placeholder="dd/mm/aaaa (opcional)">
+        <input type="date" id="f-data">
       </div>
       <div class="field" style="flex:0;min-width:120px">
         <label>Status</label>
@@ -82,6 +82,22 @@
 
   const CAT   = 'energia';
   const COLOR = '#ff5c00';
+
+  // converte "2026-03" → "Março/2026"
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  function monthInputToLabel(val) {
+    if (!val) return '';
+    const [ano, mes] = val.split('-');
+    return MESES[parseInt(mes) - 1] + '/' + ano;
+  }
+
+  // converte "2026-03-15" → "15/03/2026"
+  function dateInputToLabel(val) {
+    if (!val) return '';
+    const [ano, mes, dia] = val.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
 
   await requireAuth();
   await renderNav(CAT);
@@ -116,7 +132,6 @@
       </div>
     `;
 
-    // gráfico — destrói e recria ao atualizar
     if (list.length >= 2) {
       document.querySelector('#chart-card').style.display = 'block';
       if (chartInstance) chartInstance.destroy();
@@ -148,13 +163,16 @@
   // submit
   const btnAdd = document.querySelector('#btn-add');
   btnAdd.addEventListener('click', async () => {
-    const mes       = document.querySelector('#f-mes').value.trim();
+    const mesRaw    = document.querySelector('#f-mes').value;
     const valor     = parseFloat(document.querySelector('#f-valor').value);
-    const data_pgto = document.querySelector('#f-data').value.trim();
+    const dataRaw   = document.querySelector('#f-data').value;
     const paga      = document.querySelector('#f-paga').value === 'true';
 
+    const mes      = monthInputToLabel(mesRaw);
+    const data_pgto = dateInputToLabel(dataRaw);
+
     if (!mes || isNaN(valor) || valor <= 0) {
-      alert('Preencha pelo menos o mês e o valor.');
+      alert('Selecione o mês e preencha o valor.');
       return;
     }
 
