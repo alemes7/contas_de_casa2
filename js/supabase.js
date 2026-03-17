@@ -4,8 +4,8 @@
 //   Supabase → Project Settings → API
 // ================================================================
 
-const SUPABASE_URL = 'COLE_SUA_URL_AQUI';        // ex: https://xyzxyz.supabase.co
-const SUPABASE_KEY = 'COLE_SUA_ANON_KEY_AQUI';   // começa com "eyJ..."
+const SUPABASE_URL = 'https://bgqvouwyolsqzibtwify.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TZb7EU5duyf6SGy-97ABaw_Rq-Lo18A';
 
 // ── Cliente ──────────────────────────────────────────────────
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
