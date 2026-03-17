@@ -478,3 +478,101 @@ footer {
 .btn-logout:hover { color: var(--ink); border-color: var(--ink); }
 
 @media (max-width: 640px) { .btn-logout { display: none; } }
+
+/* ── Nav user info ── */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+.nav-email {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .04em;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+@media (max-width: 640px) { .nav-user { display: none; } }
+
+/* ── Chart card ── */
+.chart-card {
+  border: 2px solid var(--ink);
+  margin-bottom: 32px;
+  animation: fadeUp .42s ease both;
+}
+.chart-card-header {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 20px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: .08em;
+}
+.chart-card-body {
+  padding: 20px;
+  background: var(--paper);
+}
+
+/* ── Totals row (acumulado + mês) ── */
+.totals-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  border: 2px solid var(--ink);
+  animation: fadeUp .4s ease both;
+}
+
+.total-bar {
+  flex: 1;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.total-bar--mes {
+  border-left: 2px solid var(--ink);
+  background: var(--ink);
+}
+
+.total-bar .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+
+.total-bar--mes .label {
+  color: #666;
+}
+
+.total-bar .value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: .02em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.total-bar--mes .value {
+  color: var(--paper);
+}
+
+/* mês atual nos cat-cards */
+.cat-mes {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .totals-row { flex-direction: column; }
+  .total-bar--mes { border-left: none; border-top: 2px solid var(--ink); }
+}

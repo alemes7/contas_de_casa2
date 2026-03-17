@@ -19,9 +19,16 @@
     </div>
   </div>
 
-  <div class="total-bar" id="total-bar" style="display:none">
-    <span class="label">TOTAL ACUMULADO</span>
-    <span class="value" id="total-geral">—</span>
+  <!-- Barra de totais: acumulado + mês atual -->
+  <div class="totals-row" id="totals-row" style="display:none">
+    <div class="total-bar total-bar--acumulado">
+      <span class="label">TOTAL ACUMULADO</span>
+      <span class="value" id="total-geral">—</span>
+    </div>
+    <div class="total-bar total-bar--mes">
+      <span class="label" id="label-mes">ESTE MÊS</span>
+      <span class="value" id="total-mes">—</span>
+    </div>
   </div>
 
   <div class="cat-grid" id="cat-grid">
@@ -36,7 +43,7 @@
   import { renderNav, brl }         from './js/shared.js';
 
   await requireAuth();
-  renderNav('index');
+  await renderNav('index');
 
   const cats = [
     { key: 'agua',     label: 'Água',     href: 'pages/agua.html',     color: 'var(--agua)'     },
@@ -46,22 +53,31 @@
   ];
 
   try {
-    const { totais, counts } = await getTotais();
-    const totalGeral = Object.values(totais).reduce((s, v) => s + v, 0);
+    const { totais, counts, totaisMes, mesAtual } = await getTotais();
 
-    document.querySelector('#total-bar').style.display = 'flex';
-    document.querySelector('#total-geral').textContent = brl(totalGeral);
+    const totalGeral  = Object.values(totais).reduce((s, v) => s + v, 0);
+    const totalMesAtual = Object.values(totaisMes).reduce((s, v) => s + v, 0);
+
+    document.querySelector('#totals-row').style.display  = 'flex';
+    document.querySelector('#total-geral').textContent   = brl(totalGeral);
+    document.querySelector('#total-mes').textContent     = totalMesAtual > 0 ? brl(totalMesAtual) : 'Sem lançamentos';
+    document.querySelector('#label-mes').textContent     = mesAtual.toUpperCase();
 
     document.querySelector('#cat-grid').innerHTML = cats.map(c => {
-      const tot = totais[c.key] ?? 0;
-      const n   = counts[c.key] ?? 0;
-      const med = n ? tot / n : 0;
+      const tot    = totais[c.key] ?? 0;
+      const n      = counts[c.key] ?? 0;
+      const med    = n ? tot / n : 0;
+      const totMes = totaisMes[c.key] ?? 0;
+      const mesTag = totMes > 0
+        ? `<div class="cat-mes">${mesAtual}: ${brl(totMes)}</div>`
+        : '';
       return `
         <a class="cat-card" href="${c.href}">
           <span class="cat-pill" style="background:${c.color}">${c.key.toUpperCase()}</span>
           <h2>${c.label}</h2>
           <div class="cat-total">${brl(tot)}</div>
           <div class="cat-meta">${n} meses · média ${brl(med)}</div>
+          ${mesTag}
           <span class="cat-arrow">↗</span>
         </a>
       `;

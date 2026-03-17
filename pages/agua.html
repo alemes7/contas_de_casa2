@@ -25,6 +25,14 @@
     <div class="stat-block"><div class="stat-label">Aguarde</div><div class="stat-value">…</div></div>
   </div>
 
+  <!-- Gráfico -->
+  <div class="chart-card" id="chart-card" style="display:none">
+    <div class="chart-card-header">EVOLUÇÃO DOS VALORES</div>
+    <div class="chart-card-body">
+      <canvas id="chart-linha" height="90"></canvas>
+    </div>
+  </div>
+
   <!-- Add form -->
   <div class="add-section">
     <div class="add-section-header" id="form-toggle">
@@ -67,15 +75,19 @@
 
 <footer>© Alexandre Lemes &nbsp;·&nbsp; Contas de Casa</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <script type="module">
   import { requireAuth, getContas, addConta, deleteConta } from '../js/supabase.js';
-  import { renderNav, renderTable, brl, total, media }     from '../js/shared.js';
+  import { renderNav, renderTable, renderChart, brl, total, media } from '../js/shared.js';
 
-  const CAT = 'agua';
+  const CAT   = 'agua';
+  const COLOR = '#0057ff';
+
   await requireAuth();
-  renderNav(CAT);
+  await renderNav(CAT);
 
   let list = [];
+  let chartInstance = null;
 
   async function load() {
     list = await getContas(CAT);
@@ -104,6 +116,13 @@
       </div>
     `;
 
+    // gráfico — destrói e recria ao atualizar
+    if (list.length >= 2) {
+      document.querySelector('#chart-card').style.display = 'block';
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = renderChart('chart-linha', list, COLOR);
+    }
+
     renderTable(list, async id => {
       if (!confirm('Remover esta conta?')) return;
       try {
@@ -129,10 +148,10 @@
   // submit
   const btnAdd = document.querySelector('#btn-add');
   btnAdd.addEventListener('click', async () => {
-    const mes      = document.querySelector('#f-mes').value.trim();
-    const valor    = parseFloat(document.querySelector('#f-valor').value);
+    const mes       = document.querySelector('#f-mes').value.trim();
+    const valor     = parseFloat(document.querySelector('#f-valor').value);
     const data_pgto = document.querySelector('#f-data').value.trim();
-    const paga     = document.querySelector('#f-paga').value === 'true';
+    const paga      = document.querySelector('#f-paga').value === 'true';
 
     if (!mes || isNaN(valor) || valor <= 0) {
       alert('Preencha pelo menos o mês e o valor.');
@@ -146,7 +165,6 @@
       const nova = await addConta(CAT, { mes, valor, data_pgto, paga });
       list.push(nova);
       refresh();
-
       document.querySelector('#f-mes').value   = '';
       document.querySelector('#f-valor').value = '';
       document.querySelector('#f-data').value  = '';

@@ -1,13 +1,13 @@
 // ── shared.js ── nav + table renderer + helpers ──
 
+import { sb } from './supabase.js';
+
 // ── Helpers ───────────────────────────────────────────────
 export const brl   = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 export const total = list => list.reduce((s, c) => s + parseFloat(c.valor), 0);
 export const media = list => list.length ? total(list) / list.length : 0;
 
 // ── Nav ───────────────────────────────────────────────────
-// Usa caminhos relativos para funcionar no GitHub Pages com subpasta
-
 function resolveHref(path) {
   const inPages = window.location.pathname.includes('/pages/');
   return inPages ? '../' + path : path;
@@ -23,7 +23,7 @@ function getNavItems() {
   ];
 }
 
-export function renderNav(active) {
+export async function renderNav(active) {
   const items = getNavItems();
 
   const links = items.map(n =>
@@ -34,11 +34,22 @@ export function renderNav(active) {
     `<a href="${n.href}" class="${n.key === active ? 'active' : ''}">${n.label}</a>`
   ).join('');
 
+  // pega email do usuário logado direto pelo sb importado
+  let userName = '';
+  try {
+    const { data } = await sb.auth.getSession();
+    const email = data?.session?.user?.email ?? '';
+    userName = email ? email.split('@')[0] : '';
+  } catch (_) {}
+
   document.querySelector('nav').innerHTML = `
     <a class="nav-brand" href="${resolveHref('index.html')}">CONTAS DE CASA</a>
     <ul class="nav-links">${links}</ul>
+    <div class="nav-user">
+      ${userName ? `<span class="nav-email">${userName}</span>` : ''}
+      <button class="btn-logout" id="btn-logout" title="Sair">↪ Sair</button>
+    </div>
     <button class="hamburger" id="hbg">☰</button>
-    <button class="btn-logout" id="btn-logout" title="Sair">↪ Sair</button>
   `;
 
   const menu = document.createElement('div');
@@ -51,9 +62,67 @@ export function renderNav(active) {
     menu.classList.toggle('open');
   });
 
+  // logout direto pelo sb — sem import dinâmico
   document.querySelector('#btn-logout').addEventListener('click', async () => {
-    const { logout } = await import(window.location.pathname.includes('/pages/') ? '../js/supabase.js' : './supabase.js');
-    await logout();
+    await sb.auth.signOut();
+    const inPages = window.location.pathname.includes('/pages/');
+    window.location.href = inPages ? '../login.html' : 'login.html';
+  });
+}
+
+// ── Chart (linha) ─────────────────────────────────────────
+export function renderChart(canvasId, list, color) {
+  if (!list.length) return;
+  const labels = list.map(c => c.mes.replace('/', '\n'));
+  const values = list.map(c => parseFloat(c.valor));
+
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Valor (R$)',
+        data: values,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: 2.5,
+        pointBackgroundColor: color,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + Number(ctx.parsed.y).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+          },
+          backgroundColor: '#111',
+          titleColor: '#888',
+          bodyColor: '#e8eaf0',
+          borderColor: '#2a2f3d',
+          borderWidth: 1,
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#2a2f3d' },
+          ticks: { color: '#6b7494', font: { family: 'IBM Plex Mono', size: 11 } }
+        },
+        y: {
+          grid: { color: '#2a2f3d' },
+          ticks: {
+            color: '#6b7494',
+            font: { family: 'IBM Plex Mono', size: 11 },
+            callback: v => 'R$' + v
+          }
+        }
+      }
+    }
   });
 }
 
