@@ -7,6 +7,48 @@ export const brl   = v => Number(v).toLocaleString('pt-BR', { style: 'currency',
 export const total = list => list.reduce((s, c) => s + parseFloat(c.valor), 0);
 export const media = list => list.length ? total(list) / list.length : 0;
 
+// Converte "Março/2026" → Date para ordenação
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+               'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function mesToDate(mesStr) {
+  if (!mesStr) return new Date(0);
+  const [nome, ano] = mesStr.split('/');
+  const idx = MESES.findIndex(m => m.toLowerCase() === nome?.toLowerCase());
+  return new Date(parseInt(ano) || 0, idx >= 0 ? idx : 0);
+}
+
+// Converte "Março/2026" → "2026-03" para o input type="month"
+function mesToMonthInput(mesStr) {
+  if (!mesStr) return '';
+  const [nome, ano] = mesStr.split('/');
+  const idx = MESES.findIndex(m => m.toLowerCase() === nome?.toLowerCase());
+  if (idx < 0 || !ano) return '';
+  return `${ano}-${String(idx + 1).padStart(2, '0')}`;
+}
+
+// Converte "15/03/2026" → "2026-03-15" para o input type="date"
+function dataPgtoToInput(dataStr) {
+  if (!dataStr) return '';
+  const [dia, mes, ano] = dataStr.split('/');
+  if (!dia || !mes || !ano) return '';
+  return `${ano}-${mes}-${dia}`;
+}
+
+// Converte "2026-03" → "Março/2026"
+function monthInputToLabel(val) {
+  if (!val) return '';
+  const [ano, mes] = val.split('-');
+  return MESES[parseInt(mes) - 1] + '/' + ano;
+}
+
+// Converte "2026-03-15" → "15/03/2026"
+function dateInputToLabel(val) {
+  if (!val) return '';
+  const [ano, mes, dia] = val.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
 // ── Nav ───────────────────────────────────────────────────
 function resolveHref(path) {
   const inPages = window.location.pathname.includes('/pages/');
@@ -34,7 +76,6 @@ export async function renderNav(active) {
     `<a href="${n.href}" class="${n.key === active ? 'active' : ''}">${n.label}</a>`
   ).join('');
 
-  // pega email do usuário logado direto pelo sb importado
   let userName = '';
   try {
     const { data } = await sb.auth.getSession();
@@ -62,7 +103,6 @@ export async function renderNav(active) {
     menu.classList.toggle('open');
   });
 
-  // logout direto pelo sb — sem import dinâmico
   document.querySelector('#btn-logout').addEventListener('click', async () => {
     await sb.auth.signOut();
     const inPages = window.location.pathname.includes('/pages/');
@@ -70,11 +110,13 @@ export async function renderNav(active) {
   });
 }
 
-// ── Chart (linha) ─────────────────────────────────────────
+// ── Chart ─────────────────────────────────────────────────
 export function renderChart(canvasId, list, color) {
   if (!list.length) return;
-  const labels = list.map(c => c.mes.replace('/', '\n'));
-  const values = list.map(c => parseFloat(c.valor));
+  // ordena antes de plotar
+  const sorted = [...list].sort((a, b) => mesToDate(a.mes) - mesToDate(b.mes));
+  const labels = sorted.map(c => c.mes.replace('/', '\n'));
+  const values = sorted.map(c => parseFloat(c.valor));
 
   return new Chart(document.getElementById(canvasId), {
     type: 'line',
@@ -101,60 +143,73 @@ export function renderChart(canvasId, list, color) {
           callbacks: {
             label: ctx => ' ' + Number(ctx.parsed.y).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
           },
-          backgroundColor: '#111',
-          titleColor: '#888',
-          bodyColor: '#e8eaf0',
-          borderColor: '#2a2f3d',
-          borderWidth: 1,
+          backgroundColor: '#111', titleColor: '#888',
+          bodyColor: '#e8eaf0', borderColor: '#2a2f3d', borderWidth: 1,
         }
       },
       scales: {
-        x: {
-          grid: { color: '#2a2f3d' },
-          ticks: { color: '#6b7494', font: { family: 'IBM Plex Mono', size: 11 } }
-        },
-        y: {
-          grid: { color: '#2a2f3d' },
-          ticks: {
-            color: '#6b7494',
-            font: { family: 'IBM Plex Mono', size: 11 },
-            callback: v => 'R$' + v
-          }
-        }
+        x: { grid: { color: '#2a2f3d' }, ticks: { color: '#6b7494', font: { family: 'IBM Plex Mono', size: 11 } } },
+        y: { grid: { color: '#2a2f3d' }, ticks: { color: '#6b7494', font: { family: 'IBM Plex Mono', size: 11 }, callback: v => 'R$' + v } }
       }
     }
   });
 }
 
-// ── Loading / Error states ─────────────────────────────────
+// ── Loading / Error ────────────────────────────────────────
 export function showLoading(containerId) {
-  document.querySelector('#' + containerId).innerHTML =
-    '<div class="empty">Carregando…</div>';
+  document.querySelector('#' + containerId).innerHTML = '<div class="empty">Carregando…</div>';
 }
-
 export function showError(containerId, msg) {
   document.querySelector('#' + containerId).innerHTML =
     '<div class="empty" style="color:var(--energia)">Erro: ' + msg + '</div>';
 }
 
-// ── Table renderer ────────────────────────────────────────
-export function renderTable(list, onDelete) {
+// ── Table renderer (com edição inline + ordenação) ────────
+export function renderTable(list, onDelete, onUpdate) {
   const container = document.querySelector('#bills-section');
   const count     = document.querySelector('#bills-count');
-  if (count) count.textContent = list.length + ' registro' + (list.length !== 1 ? 's' : '');
 
-  if (!list.length) {
+  // ordena por data crescente
+  const sorted = [...list].sort((a, b) => mesToDate(a.mes) - mesToDate(b.mes));
+
+  if (count) count.textContent = sorted.length + ' registro' + (sorted.length !== 1 ? 's' : '');
+
+  if (!sorted.length) {
     container.innerHTML = '<div class="empty">Nenhuma conta registrada ainda.<br>Use o formulário acima para adicionar.</div>';
     return;
   }
 
-  const rows = [...list].reverse().map(c => `
-    <tr>
+  const rows = sorted.map(c => `
+    <tr data-id="${c.id}" class="row-view">
       <td>${c.mes}</td>
       <td class="valor">${brl(c.valor)}</td>
       <td>${c.data_pgto ?? '—'}</td>
       <td><span class="badge ${c.paga ? 'badge-paga' : 'badge-aberto'}">${c.paga ? 'Paga' : 'Em aberto'}</span></td>
-      <td class="del-cell"><button class="btn-del" data-id="${c.id}" title="Remover">✕</button></td>
+      <td class="actions-cell">
+        <button class="btn-edit" data-id="${c.id}" title="Editar">✎</button>
+        <button class="btn-del"  data-id="${c.id}" title="Remover">✕</button>
+      </td>
+    </tr>
+    <tr data-id="${c.id}" class="row-edit" style="display:none">
+      <td>
+        <input class="edit-mes"   type="month" value="${mesToMonthInput(c.mes)}">
+      </td>
+      <td>
+        <input class="edit-valor" type="number" step="0.01" min="0" value="${c.valor}">
+      </td>
+      <td>
+        <input class="edit-data"  type="date" value="${dataPgtoToInput(c.data_pgto)}">
+      </td>
+      <td>
+        <select class="edit-paga" style="font-family:'IBM Plex Mono',monospace;font-size:12px;padding:5px 8px;border:2px solid var(--border);background:var(--paper);color:var(--ink);">
+          <option value="true"  ${c.paga ? 'selected' : ''}>Paga</option>
+          <option value="false" ${!c.paga ? 'selected' : ''}>Em aberto</option>
+        </select>
+      </td>
+      <td class="actions-cell">
+        <button class="btn-save"   data-id="${c.id}" title="Salvar">✓</button>
+        <button class="btn-cancel" data-id="${c.id}" title="Cancelar">✕</button>
+      </td>
     </tr>
   `).join('');
 
@@ -165,6 +220,52 @@ export function renderTable(list, onDelete) {
     </table>
   `;
 
+  // ── botão editar ──
+  container.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      container.querySelector(`.row-view[data-id="${id}"]`).style.display  = 'none';
+      container.querySelector(`.row-edit[data-id="${id}"]`).style.display  = '';
+    });
+  });
+
+  // ── botão cancelar ──
+  container.querySelectorAll('.btn-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      container.querySelector(`.row-view[data-id="${id}"]`).style.display  = '';
+      container.querySelector(`.row-edit[data-id="${id}"]`).style.display  = 'none';
+    });
+  });
+
+  // ── botão salvar ──
+  container.querySelectorAll('.btn-save').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id      = btn.dataset.id;
+      const row     = container.querySelector(`.row-edit[data-id="${id}"]`);
+      const mes     = monthInputToLabel(row.querySelector('.edit-mes').value);
+      const valor   = parseFloat(row.querySelector('.edit-valor').value);
+      const data_pgto = dateInputToLabel(row.querySelector('.edit-data').value);
+      const paga    = row.querySelector('.edit-paga').value === 'true';
+
+      if (!mes || isNaN(valor) || valor <= 0) {
+        alert('Preencha mês e valor corretamente.'); return;
+      }
+
+      btn.textContent = '…';
+      btn.disabled    = true;
+
+      try {
+        await onUpdate(id, { mes, valor, data_pgto, paga });
+      } catch (err) {
+        alert('Erro ao salvar: ' + err.message);
+        btn.textContent = '✓';
+        btn.disabled    = false;
+      }
+    });
+  });
+
+  // ── botão deletar ──
   container.querySelectorAll('.btn-del').forEach(btn => {
     btn.addEventListener('click', () => onDelete(btn.dataset.id));
   });

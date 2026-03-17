@@ -603,3 +603,41 @@ footer {
 ::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* ── Edit row ── */
+.row-edit td {
+  background: rgba(0,0,0,.03);
+  padding: 8px 16px;
+}
+.row-edit input, .row-edit select {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 2px solid var(--cat, var(--ink));
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+}
+
+/* ── Action buttons (edit / save / cancel) ── */
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+.btn-edit, .btn-del, .btn-save, .btn-cancel {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 5px;
+  transition: color .15s;
+}
+.btn-edit   { color: var(--muted); }
+.btn-edit:hover { color: var(--accent, var(--ink)); }
+.btn-del    { color: var(--muted); }
+.btn-del:hover  { color: var(--energia); }
+.btn-save   { color: var(--muted); }
+.btn-save:hover { color: var(--accent2, #008f3c); }
+.btn-cancel { color: var(--muted); }
+.btn-cancel:hover { color: var(--energia); }

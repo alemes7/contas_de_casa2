@@ -25,7 +25,6 @@
     <div class="stat-block"><div class="stat-label">Aguarde</div><div class="stat-value">…</div></div>
   </div>
 
-  <!-- Gráfico -->
   <div class="chart-card" id="chart-card" style="display:none">
     <div class="chart-card-header">EVOLUÇÃO DOS VALORES</div>
     <div class="chart-card-body">
@@ -33,7 +32,6 @@
     </div>
   </div>
 
-  <!-- Add form -->
   <div class="add-section">
     <div class="add-section-header" id="form-toggle">
       REGISTRAR NOVA CONTA <span>+</span>
@@ -62,7 +60,6 @@
     </div>
   </div>
 
-  <!-- Bills list -->
   <div class="bills-section">
     <div class="bills-header">
       <h2>HISTÓRICO</h2>
@@ -77,22 +74,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <script type="module">
-  import { requireAuth, getContas, addConta, deleteConta } from '../js/supabase.js';
-  import { renderNav, renderTable, renderChart, brl, total, media } from '../js/shared.js';
+  import { requireAuth, getContas, addConta, deleteConta, updateConta } from '../js/supabase.js';
+  import { renderNav, renderTable, renderChart, brl, total, media }     from '../js/shared.js';
 
   const CAT   = 'agua';
   const COLOR = '#0057ff';
 
-  // converte "2026-03" → "Março/2026"
   const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
   function monthInputToLabel(val) {
     if (!val) return '';
     const [ano, mes] = val.split('-');
     return MESES[parseInt(mes) - 1] + '/' + ano;
   }
-
-  // converte "2026-03-15" → "15/03/2026"
   function dateInputToLabel(val) {
     if (!val) return '';
     const [ano, mes, dia] = val.split('-');
@@ -118,18 +113,9 @@
     const max = list.length ? Math.max(...list.map(c => parseFloat(c.valor))) : 0;
 
     document.querySelector('#stats').innerHTML = `
-      <div class="stat-block">
-        <div class="stat-label">Total pago</div>
-        <div class="stat-value">${brl(tot)}</div>
-      </div>
-      <div class="stat-block">
-        <div class="stat-label">Média mensal</div>
-        <div class="stat-value">${brl(med)}</div>
-      </div>
-      <div class="stat-block">
-        <div class="stat-label">Maior conta</div>
-        <div class="stat-value">${brl(max)}</div>
-      </div>
+      <div class="stat-block"><div class="stat-label">Total pago</div><div class="stat-value">${brl(tot)}</div></div>
+      <div class="stat-block"><div class="stat-label">Média mensal</div><div class="stat-value">${brl(med)}</div></div>
+      <div class="stat-block"><div class="stat-label">Maior conta</div><div class="stat-value">${brl(max)}</div></div>
     `;
 
     if (list.length >= 2) {
@@ -138,21 +124,28 @@
       chartInstance = renderChart('chart-linha', list, COLOR);
     }
 
-    renderTable(list, async id => {
-      if (!confirm('Remover esta conta?')) return;
-      try {
-        await deleteConta(id);
-        list = list.filter(c => c.id !== id);
+    renderTable(
+      list,
+      // onDelete
+      async id => {
+        if (!confirm('Remover esta conta?')) return;
+        try {
+          await deleteConta(id);
+          list = list.filter(c => c.id !== id);
+          refresh();
+        } catch (err) { alert('Erro ao remover: ' + err.message); }
+      },
+      // onUpdate
+      async (id, campos) => {
+        const atualizada = await updateConta(id, campos);
+        list = list.map(c => c.id === id ? atualizada : c);
         refresh();
-      } catch (err) {
-        alert('Erro ao remover: ' + err.message);
       }
-    });
+    );
   }
 
   await load();
 
-  // form toggle
   const header = document.querySelector('#form-toggle');
   const form   = document.querySelector('#add-form');
   header.addEventListener('click', () => {
@@ -160,20 +153,17 @@
     form.classList.toggle('open');
   });
 
-  // submit
   const btnAdd = document.querySelector('#btn-add');
   btnAdd.addEventListener('click', async () => {
     const mesRaw    = document.querySelector('#f-mes').value;
     const valor     = parseFloat(document.querySelector('#f-valor').value);
     const dataRaw   = document.querySelector('#f-data').value;
     const paga      = document.querySelector('#f-paga').value === 'true';
-
-    const mes      = monthInputToLabel(mesRaw);
+    const mes       = monthInputToLabel(mesRaw);
     const data_pgto = dateInputToLabel(dataRaw);
 
     if (!mes || isNaN(valor) || valor <= 0) {
-      alert('Selecione o mês e preencha o valor.');
-      return;
+      alert('Selecione o mês e preencha o valor.'); return;
     }
 
     btnAdd.disabled    = true;

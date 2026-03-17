@@ -61,6 +61,17 @@ export async function deleteConta(id) {
   if (error) throw error;
 }
 
+export async function updateConta(id, { mes, valor, data_pgto, paga }) {
+  const { data, error } = await sb
+    .from('contas')
+    .update({ mes, valor, data_pgto: data_pgto || null, paga })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function getTotais() {
   const { data, error } = await sb.from('contas').select('categoria, valor, mes');
   if (error) throw error;
