@@ -96,7 +96,7 @@
   <div class="login-box">
     <div class="login-header">
       <div class="brand">CONTAS DE CASA</div>
-      <div class="sub">Acesso restrito · Família Lemes</div>
+      <div class="sub">Acesso restrito · Família Silva</div>
     </div>
     <div class="login-body">
       <div class="login-error" id="erro"></div>
@@ -120,7 +120,7 @@
 
   // Se já está logado, vai direto pro index
   const session = await getSession();
-  if (session) window.location.href = '/index.html';
+  if (session) window.location.href = 'index.html';
 
   const btnLogin = document.querySelector('#btn-login');
   const erroEl   = document.querySelector('#erro');
@@ -147,7 +147,7 @@
 
     try {
       await login(email, senha);
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
     } catch (err) {
       setErro('E-mail ou senha incorretos.');
       btnLogin.disabled    = false;

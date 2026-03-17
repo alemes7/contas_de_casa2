@@ -1,4 +1,4 @@
-// ── shared.js ── nav + table renderer + helpers (sem localStorage) ──
+// ── shared.js ── nav + table renderer + helpers ──
 
 // ── Helpers ───────────────────────────────────────────────
 export const brl   = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -6,25 +6,36 @@ export const total = list => list.reduce((s, c) => s + parseFloat(c.valor), 0);
 export const media = list => list.length ? total(list) / list.length : 0;
 
 // ── Nav ───────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { label: 'Início',   href: '/index.html',          key: 'index'    },
-  { label: 'Água',     href: '/pages/agua.html',      key: 'agua'     },
-  { label: 'Energia',  href: '/pages/energia.html',   key: 'energia'  },
-  { label: 'Internet', href: '/pages/internet.html',  key: 'internet' },
-  { label: 'Vivo',     href: '/pages/vivo.html',      key: 'vivo'     },
-];
+// Usa caminhos relativos para funcionar no GitHub Pages com subpasta
+
+function resolveHref(path) {
+  const inPages = window.location.pathname.includes('/pages/');
+  return inPages ? '../' + path : path;
+}
+
+function getNavItems() {
+  return [
+    { label: 'Início',   href: resolveHref('index.html'),         key: 'index'    },
+    { label: 'Água',     href: resolveHref('pages/agua.html'),     key: 'agua'     },
+    { label: 'Energia',  href: resolveHref('pages/energia.html'),  key: 'energia'  },
+    { label: 'Internet', href: resolveHref('pages/internet.html'), key: 'internet' },
+    { label: 'Vivo',     href: resolveHref('pages/vivo.html'),     key: 'vivo'     },
+  ];
+}
 
 export function renderNav(active) {
-  const links = NAV_ITEMS.map(n =>
+  const items = getNavItems();
+
+  const links = items.map(n =>
     `<li><a href="${n.href}" class="${n.key === active ? 'active' : ''}">${n.label}</a></li>`
   ).join('');
 
-  const mobileLinks = NAV_ITEMS.map(n =>
+  const mobileLinks = items.map(n =>
     `<a href="${n.href}" class="${n.key === active ? 'active' : ''}">${n.label}</a>`
   ).join('');
 
   document.querySelector('nav').innerHTML = `
-    <a class="nav-brand" href="/index.html">CONTAS DE CASA</a>
+    <a class="nav-brand" href="${resolveHref('index.html')}">CONTAS DE CASA</a>
     <ul class="nav-links">${links}</ul>
     <button class="hamburger" id="hbg">☰</button>
     <button class="btn-logout" id="btn-logout" title="Sair">↪ Sair</button>
@@ -41,30 +52,30 @@ export function renderNav(active) {
   });
 
   document.querySelector('#btn-logout').addEventListener('click', async () => {
-    const { logout } = await import('./supabase.js');
-    logout();
+    const { logout } = await import(window.location.pathname.includes('/pages/') ? '../js/supabase.js' : './js/supabase.js');
+    await logout();
   });
 }
 
 // ── Loading / Error states ─────────────────────────────────
 export function showLoading(containerId) {
-  document.querySelector(`#${containerId}`).innerHTML =
-    `<div class="empty">Carregando…</div>`;
+  document.querySelector('#' + containerId).innerHTML =
+    '<div class="empty">Carregando…</div>';
 }
 
 export function showError(containerId, msg) {
-  document.querySelector(`#${containerId}`).innerHTML =
-    `<div class="empty" style="color:var(--energia)">Erro: ${msg}</div>`;
+  document.querySelector('#' + containerId).innerHTML =
+    '<div class="empty" style="color:var(--energia)">Erro: ' + msg + '</div>';
 }
 
 // ── Table renderer ────────────────────────────────────────
 export function renderTable(list, onDelete) {
   const container = document.querySelector('#bills-section');
   const count     = document.querySelector('#bills-count');
-  if (count) count.textContent = `${list.length} registro${list.length !== 1 ? 's' : ''}`;
+  if (count) count.textContent = list.length + ' registro' + (list.length !== 1 ? 's' : '');
 
   if (!list.length) {
-    container.innerHTML = `<div class="empty">Nenhuma conta registrada ainda.<br>Use o formulário acima para adicionar.</div>`;
+    container.innerHTML = '<div class="empty">Nenhuma conta registrada ainda.<br>Use o formulário acima para adicionar.</div>';
     return;
   }
 

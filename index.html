@@ -35,7 +35,7 @@
   import { requireAuth, getTotais } from './js/supabase.js';
   import { renderNav, brl }         from './js/shared.js';
 
-  await requireAuth('.');
+  await requireAuth();
   renderNav('index');
 
   const cats = [

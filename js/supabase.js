@@ -4,11 +4,27 @@
 //   Supabase → Project Settings → API
 // ================================================================
 
-const SUPABASE_URL = 'https://bgqvouwyolsqzibtwify.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_TZb7EU5duyf6SGy-97ABaw_Rq-Lo18A';
+const SUPABASE_URL = 'COLE_SUA_URL_AQUI';        // ex: https://xyzxyz.supabase.co
+const SUPABASE_KEY = 'COLE_SUA_ANON_KEY_AQUI';   // começa com "eyJ..."
+
 // ── Cliente ──────────────────────────────────────────────────
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 export const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Base path (funciona no GitHub Pages e local) ─────────────
+// Ex: https://alemes7.github.io/contas_de_casa2  →  /contas_de_casa2
+function basePath() {
+  // pega tudo até a última pasta que contém index.html ou login.html
+  const path = window.location.pathname;
+  // remove /pages/arquivo.html ou /arquivo.html, fica só o root do projeto
+  const parts = path.split('/');
+  // se estiver em /pages/, sobe dois níveis; senão sobe um
+  const inPages = parts.includes('pages');
+  const base = inPages
+    ? parts.slice(0, parts.indexOf('pages')).join('/')
+    : parts.slice(0, -1).join('/');
+  return base || '';
+}
 
 // ── Auth ─────────────────────────────────────────────────────
 
@@ -19,10 +35,10 @@ export async function getSession() {
 }
 
 /** Redireciona para login.html se não houver sessão */
-export async function requireAuth(base = '..') {
+export async function requireAuth() {
   const session = await getSession();
   if (!session) {
-    window.location.href = `${base}/login.html`;
+    window.location.href = basePath() + '/login.html';
   }
   return session;
 }
@@ -37,7 +53,7 @@ export async function login(email, senha) {
 /** Logout */
 export async function logout() {
   await sb.auth.signOut();
-  window.location.href = '/login.html';
+  window.location.href = basePath() + '/login.html';
 }
 
 // ── CRUD Contas ───────────────────────────────────────────────
